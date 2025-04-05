@@ -32,10 +32,21 @@ public class LinkedList : IEnumerable<int> {
     /// Adds a new node at the back (i.e. the tail) of the linked list.
     /// </summary>
     public void AddLast(int value) {
-        // TODO Problem 1
+    // Create new node
+    Node newNode = new Node(value);
+    
+    // If the list is empty, then point both head and tail to the new node.
+    if (_tail is null) {
+        _head = newNode;
+        _tail = newNode;
     }
-
-
+    // If the list is not empty, then only tail will be affected.
+    else {
+        newNode.Prev = _tail; // Connect new node to the previous tail
+        _tail.Next = newNode; // Connect the previous tail to the new node
+        _tail = newNode; // Update the tail to point to the new node
+    }
+}
     /// <summary>
     /// Removes the first node (i.e. the head) of the linked list.
     /// </summary>
@@ -56,12 +67,19 @@ public class LinkedList : IEnumerable<int> {
     }
 
 
-    /// <summary>
-    /// Removes the last node (i.e. the tail) of the linked list.
-    /// </summary>
+  
     public void RemoveLast() {
-        // TODO Problem 2
+    if (_head == _tail) {
+        _head = null;
+        _tail = null;
     }
+    // If the list has more than one item in it, then only the tail
+    // will be affected.
+    else if (_tail is not null) {
+        _tail.Prev!.Next = null; // Disconnect the second-to-last node from the last node
+        _tail = _tail.Prev; // Update the tail to point to the second-to-last node
+    }
+}
 
     /// <summary>
     /// Adds 'newValue' after the first occurrence of 'value' in the linked list.
@@ -94,20 +112,54 @@ public class LinkedList : IEnumerable<int> {
         }
     }
 
-    /// <summary>
-    /// Removes the first node that contains 'value'.
-    /// </summary>
     public void Remove(int value) {
-        // TODO Problem 3
+    // Special case: If the list is empty, nothing to remove
+    if (_head is null) {
+        return;
     }
+    
+    // If the value is at the head, use RemoveFirst()
+    if (_head.Data == value) {
+        RemoveFirst();
+        return;
+    }
+    
+    // If the value is at the tail, use RemoveLast()
+    if (_tail!.Data == value) {
+        RemoveLast();
+        return;
+    }
+    
+    // Otherwise, search for the node starting from the head
+    Node? curr = _head;
+    while (curr is not null) {
+        if (curr.Data == value) {
+            // When found, bypass the current node by connecting
+            // its previous node directly to its next node
+            curr.Prev!.Next = curr.Next;
+            curr.Next!.Prev = curr.Prev;
+            return; // Exit once the node is removed
+        }
+        curr = curr.Next;
+    }
+}
 
-    /// <summary>
-    /// Searches for all instances of 'oldValue' and replace the value to 'newValue'.
-    /// </summary>
+
     public void Replace(int oldValue, int newValue) {
-        // TODO Problem 4
+    // Start at the head of the list
+    Node? curr = _head;
+    
+    // Traverse through the entire list
+    while (curr is not null) {
+        // If current node's data equals oldValue, replace it with newValue
+        if (curr.Data == oldValue) {
+            curr.Data = newValue;
+        }
+        
+        // Move to the next node
+        curr = curr.Next;
     }
-
+}
     /// <summary>
     /// Yields all values in the linked list
     /// </summary>
@@ -127,13 +179,14 @@ public class LinkedList : IEnumerable<int> {
         }
     }
 
-    /// <summary>
-    /// Iterate backward through the Linked List
-    /// </summary>
+ 
     public IEnumerable Reverse() {
-        // TODO Problem 5
-        yield return 0; // replace this line with the correct yield return statement(s)
+    var curr = _tail; // Start at the end since this is a backward iteration
+    while (curr is not null) {
+        yield return curr.Data; // Provide (yield) each item to the user
+        curr = curr.Prev; // Go backward in the linked list
     }
+}
 
     public override string ToString() {
         return "<LinkedList>{" + string.Join(", ", this) + "}";
